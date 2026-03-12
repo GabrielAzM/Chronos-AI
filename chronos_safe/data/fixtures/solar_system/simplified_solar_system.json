@@ -1,0 +1,20 @@
+{
+  "ids": ["earth", "mercury", "sun", "venus"],
+  "masses": [3.00348959632e-06, 1.6601208254589484e-07, 1.0, 2.4478382877847715e-06],
+  "positions": [
+    [1.0, 0.0, 0.0],
+    [0.387, 0.0, 0.02],
+    [0.0, 0.0, 0.0],
+    [0.723, 0.0, -0.01]
+  ],
+  "velocities": [
+    [0.0, 0.01720209895, 0.0],
+    [0.0, 0.0274, 0.001],
+    [0.0, 0.0, 0.0],
+    [0.0, 0.0201, -0.0004]
+  ],
+  "metadata": {
+    "source": "offline_fixture",
+    "description": "Simplified barycentric-like Solar System snapshot for offline tests."
+  }
+}

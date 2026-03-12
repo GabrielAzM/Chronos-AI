@@ -1,0 +1,25 @@
+{
+  "kind": "generalist",
+  "num_samples": 4,
+  "dt_days": 1.0,
+  "body_ids_template": [
+    "body_01",
+    "sun",
+    "pad_02",
+    "pad_03",
+    "pad_04",
+    "pad_05",
+    "pad_06",
+    "pad_07",
+    "pad_08",
+    "pad_09",
+    "pad_10",
+    "pad_11",
+    "pad_12",
+    "pad_13",
+    "pad_14",
+    "pad_15"
+  ],
+  "max_padded_bodies": 16,
+  "seed": 42
+}

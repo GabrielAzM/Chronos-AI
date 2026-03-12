@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chronos-safe"
+version = "1.0.0"
+description = "Hybrid orbital simulation platform with residual learning, safety guards and physics fallback."
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+license = { text = "MIT" }
+authors = [
+  { name = "Gabriel Azevedo Marques" }
+]
+keywords = ["astrodynamics", "n-body", "simulation", "gnn", "physics", "hybrid-ai"]
+dependencies = [
+  "numpy>=1.26",
+  "pydantic>=2.7",
+  "fastapi>=0.110",
+  "uvicorn>=0.30",
+]
+
+[project.optional-dependencies]
+ml = [
+  "torch>=2.6",
+  "torch-geometric>=2.5",
+]
+science = [
+  "rebound>=4.4",
+  "astropy>=6.0",
+  "astroquery>=0.4",
+  "pandas>=2.0",
+  "scikit-learn>=1.4",
+  "matplotlib>=3.8",
+]
+dev = [
+  "pytest>=8.0",
+]
+
+[project.scripts]
+chronos = "chronos_safe.apps.cli.main:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["chronos_safe*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

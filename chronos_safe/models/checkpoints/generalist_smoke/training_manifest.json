@@ -1,0 +1,16 @@
+{
+  "dataset_dir": "data\\processed\\generalist_smoke",
+  "output_dir": "models\\checkpoints\\generalist_smoke",
+  "epochs_requested": 1,
+  "best_epoch": 1,
+  "best_val_loss": 5695973888.0,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 1103940200.0,
+      "val_loss": 5695973888.0
+    }
+  ],
+  "device": "cpu",
+  "initial_checkpoint": null
+}

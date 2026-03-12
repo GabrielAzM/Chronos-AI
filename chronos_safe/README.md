@@ -1,0 +1,189 @@
+# CHRONOS-SAFE
+
+CHRONOS-SAFE is a hybrid orbital simulation platform built around a clear principle: physics remains the trusted backbone, and machine learning acts as a residual corrector under explicit safety controls.
+
+The v1.0 architecture combines:
+
+- a fast Newtonian `QuickIntegrator` for cheap rollout proposals;
+- a residual graph neural network that predicts `delta_acceleration`;
+- an OOD/risk guard with numerical rejection rules;
+- an automatic fallback to a trusted `REBOUND IAS15` reference engine when available;
+- offline-first fixtures and validation, including an Apophis regression pipeline.
+
+## Scientific position
+
+This project is not a pure neural simulator. The core hypothesis is that a graph residual model correcting the error of a fast physical integrator has better stability and generalization prospects than a model trying to replace orbital dynamics end to end.
+
+The training target is:
+
+`delta_acceleration = effective_teacher_acceleration - quick_integrator_acceleration`
+
+In practice, the dataset derives this residual from the difference between the one-step teacher velocity and the one-step quick integrator velocity.
+
+## Repository layout
+
+```text
+chronos_safe/
+├── chronos_safe/        # Python package
+├── data/                # offline fixtures, raw and processed datasets
+├── models/              # checkpoints and scalers
+├── reports/             # validation and benchmark outputs
+├── docs/                # architecture and release documentation
+└── tests/               # executable regression tests
+```
+
+## Installation
+
+Official target runtime is Python `3.11/3.12`. The package allows `3.13` for local development, but the full scientific stack is not guaranteed there.
+
+Step-by-step execution guide:
+
+- `docs/como_rodar.md`
+
+Minimal install:
+
+```bash
+python -m pip install -e .
+```
+
+Training stack:
+
+```bash
+python -m pip install -e ".[ml,dev]"
+```
+
+Full science stack:
+
+```bash
+python -m pip install -e ".[ml,science,dev]"
+```
+
+## CLI usage
+
+Generate a generalist synthetic dataset:
+
+```bash
+chronos generate-generalist --output-dir data/processed/generalist --num-samples 128 --min-bodies 2 --max-bodies 6
+```
+
+Generate a specialist Apophis dataset:
+
+```bash
+chronos generate-specialist --output-dir data/processed/specialist --fixture-name apophis/apophis_fixture.json --num-samples 64
+```
+
+Train the generalist residual model:
+
+```bash
+chronos train-generalist --dataset-dir data/processed/generalist --output-dir models/checkpoints/generalist --epochs 20
+```
+
+Fine-tune the specialist model:
+
+```bash
+chronos train-specialist --dataset-dir data/processed/specialist --output-dir models/checkpoints/specialist --base-checkpoint models/checkpoints/generalist/model.pt
+```
+
+Run a hybrid simulation on an offline fixture:
+
+```bash
+chronos simulate --fixture-name apophis/apophis_fixture.json --steps 30 --dt-days 1.0 --output-path reports/validation/simulation.json
+```
+
+Run the Apophis validation pipeline:
+
+```bash
+chronos validate-apophis --steps 180 --dt-days 1.0
+```
+
+## API usage
+
+Quick web launcher:
+
+```bash
+python run.py
+```
+
+Open:
+
+```text
+http://127.0.0.1:8000/
+```
+
+Run the API:
+
+```bash
+uvicorn chronos_safe.apps.api.main:app --reload
+```
+
+Health:
+
+```bash
+curl http://127.0.0.1:8000/health
+```
+
+Simulation:
+
+```bash
+curl -X POST http://127.0.0.1:8000/simulate \
+  -H "Content-Type: application/json" \
+  -d "{\"fixture_name\":\"apophis/apophis_fixture.json\",\"steps\":30,\"dt_days\":1.0}"
+```
+
+Apophis validation:
+
+```bash
+curl -X POST http://127.0.0.1:8000/validate/apophis \
+  -H "Content-Type: application/json" \
+  -d "{\"steps\":180,\"dt_days\":1.0}"
+```
+
+## Main modules
+
+- `chronos_safe.domain`: shared typed state and result contracts.
+- `chronos_safe.physics`: units, barycentric transforms, fast integrator, reference engine and invariants.
+- `chronos_safe.data`: dataset generation, offline Horizons fixtures, preprocessing and scalers.
+- `chronos_safe.models`: residual GNN, OOD scoring and uncertainty hooks.
+- `chronos_safe.training`: two-phase training pipeline, curriculum metadata and checkpointing.
+- `chronos_safe.simulation`: hybrid engine, safe switch, rollout orchestration and Apophis mission validation.
+- `chronos_safe.evaluation`: rollout metrics, benchmarks and summary outputs.
+- `chronos_safe.apps`: CLI and FastAPI entrypoints.
+
+## Metrics tracked
+
+- residual supervised loss;
+- rollout mean/final position error;
+- rollout mean/final velocity error;
+- energy drift;
+- angular momentum drift;
+- Earth-Apophis final distance error;
+- runtime and speedup vs reference;
+- fallback count and fallback rate.
+
+## Safety model
+
+Fallback to the reference engine is triggered when the hybrid proposal shows:
+
+- `NaN` or `Inf`;
+- residual acceleration above configured bounds;
+- implausible speed;
+- violated minimum pair distance;
+- OOD score above the learned threshold;
+- energy drift above tolerance;
+- angular momentum drift above tolerance.
+
+Each fallback event records the step, logical time, reason, bodies involved, associated score and action taken.
+
+## Fixtures and limitations
+
+The repository ships with offline fixtures for regression tests and reproducible local runs. The Apophis fixture is intentionally frozen and approximate; it is suitable for software validation, not for final scientific claims. For production-grade validation, refresh the state from JPL Horizons and freeze the new snapshot in `data/fixtures/`.
+
+## Tests
+
+Run:
+
+```bash
+pytest
+```
+
+The suite covers units, frames, reference integration, dataset generation, model forward stability, safety fallback and the offline Apophis pipeline.
