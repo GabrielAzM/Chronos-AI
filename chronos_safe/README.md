@@ -559,6 +559,8 @@ Se quiser o passo a passo completo dentro do painel do Render, leia [render_depl
 
 Importante: o deploy web do Render deve ser tratado como ambiente de demonstracao. Arquivos gerados em runtime podem nao persistir entre deploys e restarts.
 
+O repositorio tambem inclui `.python-version` em `chronos_safe/` para forcar `Python 3.12.8` no deploy manual.
+
 ## Instalacao
 
 ### Basica

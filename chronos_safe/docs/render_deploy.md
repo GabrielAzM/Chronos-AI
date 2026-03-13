@@ -70,6 +70,7 @@ Se quiser configurar manualmente no painel:
 
 5. Adicione estas variaveis de ambiente:
 
+- `PYTHON_VERSION=3.12.8`
 - `CHRONOS_OPEN_BROWSER=false`
 - `CHRONOS_DEVICE=cpu`
 - `CHRONOS_USE_REBOUND_IF_AVAILABLE=false`
@@ -82,6 +83,11 @@ Se quiser configurar manualmente no painel:
 ```
 
 7. Crie o servico e aguarde o deploy.
+
+Observacao:
+
+- o repositorio agora tambem inclui `.python-version` dentro de `chronos_safe/`;
+- isso ajuda o Render a usar `3.12.8` mesmo quando o servico e criado manualmente.
 
 ## O que o avaliador deve fazer ao abrir
 
