@@ -14,6 +14,7 @@ from chronos_safe.apps.api.routes_simulation import router as simulation_router
 from chronos_safe.apps.api.routes_training import router as training_router
 from chronos_safe.apps.api.schemas import HealthResponse
 from chronos_safe.apps.api.web_ui import build_catalog_payload, render_dashboard_html
+from chronos_safe.config.settings import SETTINGS
 from chronos_safe.version import __version__
 
 STATIC_DIR = Path(__file__).with_name("static")
