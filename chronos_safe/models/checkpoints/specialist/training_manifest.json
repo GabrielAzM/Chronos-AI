@@ -1,0 +1,41 @@
+{
+  "dataset_dir": "C:\\Users\\0100cit9207\\Downloads\\Chronos-simulator\\chronos_safe\\data\\processed\\specialist",
+  "output_dir": "C:\\Users\\0100cit9207\\Downloads\\Chronos-simulator\\chronos_safe\\models\\checkpoints\\specialist",
+  "epochs_requested": 6,
+  "best_epoch": 2,
+  "best_val_loss": 6.572017083921924e+27,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 1.1976286287696194e+28,
+      "val_loss": 6.573927871460055e+27
+    },
+    {
+      "epoch": 2,
+      "train_loss": 1.0679564591615294e+28,
+      "val_loss": 6.572017083921924e+27
+    },
+    {
+      "epoch": 3,
+      "train_loss": 1.0252658107853342e+28,
+      "val_loss": 6.572017674217735e+27
+    },
+    {
+      "epoch": 4,
+      "train_loss": 9.853748595424946e+27,
+      "val_loss": 6.572017083921924e+27
+    },
+    {
+      "epoch": 5,
+      "train_loss": 1.110048109080562e+28,
+      "val_loss": 6.572017083921924e+27
+    },
+    {
+      "epoch": 6,
+      "train_loss": 1.2134684410232446e+28,
+      "val_loss": 6.572017083921924e+27
+    }
+  ],
+  "device": "cpu",
+  "initial_checkpoint": null
+}

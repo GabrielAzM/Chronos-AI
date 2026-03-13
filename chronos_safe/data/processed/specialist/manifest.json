@@ -1,0 +1,8 @@
+{
+  "kind": "specialist",
+  "fixture_name": "apophis/apophis_fixture.json",
+  "num_samples": 64,
+  "dt_days": 1.0,
+  "seed": 42,
+  "max_padded_bodies": 16
+}

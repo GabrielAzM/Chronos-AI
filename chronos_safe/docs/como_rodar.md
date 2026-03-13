@@ -2,6 +2,26 @@
 
 Este guia mostra o passo a passo para instalar e executar o projeto localmente.
 
+Se voce nao quer estudar fisica orbital nem treinar modelos agora, siga apenas a secao `Rota rapida para avaliacao`.
+
+Todos os comandos de instalacao abaixo assumem que voce esta dentro da pasta:
+
+```text
+C:\Users\0100cit9207\Downloads\Chronos-simulator\chronos_safe
+```
+
+Se voce estiver um nivel acima, em:
+
+```text
+C:\Users\0100cit9207\Downloads\Chronos-simulator
+```
+
+entre primeiro na pasta correta:
+
+```powershell
+cd chronos_safe
+```
+
 ## 1. Entrar na pasta do projeto
 
 Abra o terminal na raiz do projeto:
@@ -9,6 +29,37 @@ Abra o terminal na raiz do projeto:
 ```powershell
 cd C:\Users\0100cit9207\Downloads\Chronos-simulator\chronos_safe
 ```
+
+## Rota rapida para avaliacao
+
+Esse e o caminho mais curto para alguem que so quer entender o sistema.
+
+1. Instale o projeto:
+
+```powershell
+python -m pip install -e ".[ml,science,dev]"
+```
+
+2. Rode a interface:
+
+```powershell
+python run.py
+```
+
+3. Abra no navegador:
+
+```text
+http://127.0.0.1:8000/
+```
+
+4. Dentro da interface, use somente isto:
+
+- `1. Ver demo 3D`
+- `2. Rodar teste Apophis`
+
+5. Leia o painel `Relatorio guiado`.
+
+Se o objetivo for deploy no Render, leia tambem [docs/render_deploy.md](/c:/Users/0100cit9207/Downloads/Chronos-simulator/chronos_safe/docs/render_deploy.md).
 
 ## 2. Criar um ambiente virtual
 
@@ -21,43 +72,63 @@ py -3.12 -m venv .venv
 .venv\Scripts\Activate.ps1
 ```
 
-Se você só tiver Python `3.13`, o projeto ainda pode rodar parcialmente, mas a stack científica completa pode exigir ajustes extras.
+Se voce so tiver Python `3.13`, o projeto ainda pode rodar parcialmente, mas a stack cientifica completa pode exigir ajustes extras.
 
-## 3. Atualizar o `pip`
+## 3. Atualizar o pip
 
 ```powershell
 python -m pip install --upgrade pip
 ```
 
-## 4. Instalar dependências
+## 4. Instalar dependencias
 
-Instalação mínima:
+Instalacao minima:
 
 ```powershell
 python -m pip install -e .
 ```
 
-Instalação para treino:
+Instalacao para treino:
 
 ```powershell
 python -m pip install -e ".[ml,dev]"
 ```
 
-Instalação completa:
+Instalacao recomendada no Windows:
 
 ```powershell
 python -m pip install -e ".[ml,science,dev]"
 ```
 
-## 5. Rodar os testes
+Isso instala a interface web, treino, dados e ferramentas de desenvolvimento.
+
+## 5. Instalar REBOUND separadamente
+
+`REBOUND` ficou separado de `science` porque em muitos ambientes Windows ele exige compilacao C/C++.
+
+Tente assim:
+
+```powershell
+python -m pip install -r requirements-rebound.txt
+```
+
+Se funcionar, o projeto passa a usar `REBOUND IAS15` automaticamente.
+
+Se falhar com erro como:
+
+```text
+Microsoft Visual C++ 14.0 or greater is required
+```
+
+voce pode continuar sem `rebound`. O projeto ainda roda com o backend de referencia em NumPy.
+
+## 6. Rodar os testes
 
 ```powershell
 python -m pytest -q
 ```
 
-Se tudo estiver correto, a suíte deve passar.
-
-## 6. Gerar dataset generalista
+## 7. Gerar dataset generalista
 
 ```powershell
 python -m chronos_safe.apps.cli.main generate-generalist `
@@ -74,7 +145,7 @@ Arquivos gerados:
 - `data/processed/generalist/manifest.json`
 - `data/processed/generalist/scaler.json`
 
-## 7. Gerar dataset especialista
+## 8. Gerar dataset especialista
 
 ```powershell
 python -m chronos_safe.apps.cli.main generate-specialist `
@@ -90,7 +161,7 @@ Arquivos gerados:
 - `data/processed/specialist/manifest.json`
 - `data/processed/specialist/scaler.json`
 
-## 8. Treinar o modelo generalista
+## 9. Treinar o modelo generalista
 
 ```powershell
 python -m chronos_safe.apps.cli.main train-generalist `
@@ -107,7 +178,7 @@ Arquivos esperados:
 - `models/checkpoints/generalist/scaler.json`
 - `models/checkpoints/generalist/training_manifest.json`
 
-## 9. Fazer fine-tuning especialista
+## 10. Fazer fine-tuning especialista
 
 ```powershell
 python -m chronos_safe.apps.cli.main train-specialist `
@@ -118,9 +189,9 @@ python -m chronos_safe.apps.cli.main train-specialist `
   --batch-size 16
 ```
 
-## 10. Rodar uma simulação híbrida
+## 11. Rodar uma simulacao hibrida
 
-Sem modelo treinado, o sistema ainda roda usando o integrador rápido com fallback físico quando necessário.
+Sem modelo treinado:
 
 ```powershell
 python -m chronos_safe.apps.cli.main simulate `
@@ -143,7 +214,7 @@ python -m chronos_safe.apps.cli.main simulate `
   --output-path reports/validation/simulation.json
 ```
 
-## 11. Rodar a validação Apophis
+## 12. Rodar a validacao Apophis
 
 ```powershell
 python -m chronos_safe.apps.cli.main validate-apophis `
@@ -162,26 +233,32 @@ python -m chronos_safe.apps.cli.main validate-apophis `
   --ood-guard-path models/checkpoints/specialist/ood_guard.json
 ```
 
-Relatórios gerados:
+Relatorios gerados:
 
 - `reports/validation/apophis_validation.json`
 - `reports/validation/apophis_validation_summary.txt`
 
-## 12. Subir a API
+## 13. Subir a interface web
 
-Forma mais simples, com interface visual:
+Forma mais simples:
 
 ```powershell
 python run.py
 ```
-
-Isso sobe o servidor e abre a dashboard web no navegador.
 
 Endereco padrao:
 
 ```text
 http://127.0.0.1:8000/
 ```
+
+Se voce estiver na pasta externa `Chronos-simulator`, tambem pode usar:
+
+```powershell
+python run.py
+```
+
+Nesse caso, o launcher externo encaminha automaticamente para `chronos_safe\run.py`.
 
 Se quiser subir sem abrir o navegador:
 
@@ -190,64 +267,51 @@ $env:CHRONOS_OPEN_BROWSER="false"
 python run.py
 ```
 
-Forma manual, sem `run.py`:
+Forma manual:
 
 ```powershell
 uvicorn chronos_safe.apps.api.main:app --reload
 ```
 
-Testar healthcheck:
-
-```powershell
-curl http://127.0.0.1:8000/health
-```
-
-Testar simulação:
-
-```powershell
-curl -X POST http://127.0.0.1:8000/simulate `
-  -H "Content-Type: application/json" `
-  -d "{\"fixture_name\":\"apophis/apophis_fixture.json\",\"steps\":30,\"dt_days\":1.0}"
-```
-
-## 13. Usar a interface web
+## 14. Usar a interface web
 
 Ao abrir `http://127.0.0.1:8000/`, voce tera uma dashboard com:
 
-- geracao de dataset generalista;
-- geracao de dataset especialista;
-- treino generalista;
-- treino especialista;
-- simulacao hibrida;
-- validacao Apophis;
+- visualizacao 3D de orbitas no navegador;
+- modo avaliacao rapida com demo 3D e teste Apophis em um clique;
+- secao avancada recolhida para geracao de datasets, treino e simulacao manual;
+- validacao Apophis com leitura guiada das metricas;
 - catalogo automatico de fixtures, checkpoints, scalers e relatorios.
 
-O painel final mostra o JSON de resposta de cada operacao.
+### O que o avaliador deve fazer
 
-## 14. Se o comando `chronos` estiver disponível
+Se a pessoa estiver avaliando a plataforma e nao a pesquisa inteira:
 
-Depois da instalação editável, você também pode usar:
+1. abrir a pagina;
+2. clicar em `1. Ver demo 3D`;
+3. clicar em `2. Rodar teste Apophis`;
+4. ler o `Relatorio guiado`.
 
-```powershell
-chronos generate-generalist ...
-chronos generate-specialist ...
-chronos train-generalist ...
-chronos train-specialist ...
-chronos simulate ...
-chronos validate-apophis ...
-```
+### O que o caso Apophis mostra
+
+O teste Apophis existe para mostrar, de forma concreta, quatro coisas:
+
+- se a simulacao hibrida acompanha a referencia fisica;
+- quanto erro acumulado aparece ao longo do rollout;
+- se houve drift fisico relevante;
+- se o sistema precisou acionar fallback.
 
 ## 15. Problemas comuns
 
-### `torch` não instala no Windows
+### `torch` nao instala no Windows
 
-Se aparecer erro de caminho longo, habilite Windows Long Paths ou use um ambiente com caminho curto.
+Se aparecer erro de caminho longo, habilite Windows Long Paths ou use um caminho curto para o ambiente virtual.
 
-### `rebound` não está instalado
+### `rebound` nao instala no Windows
 
-O projeto continua funcionando com o backend de referência em NumPy, mas o baseline oficial com `IAS15` só fica disponível quando `REBOUND` estiver instalado.
+Se falhar por compilador C++, continue sem ele por enquanto. O sistema usa o backend NumPy de referencia.
 
-### `chronos` não foi reconhecido
+### `chronos` nao foi reconhecido
 
 Use o entrypoint direto:
 
@@ -257,16 +321,14 @@ python -m chronos_safe.apps.cli.main <comando>
 
 ### `pip install` falhou com `Fatal error in launcher`
 
-Isso acontece quando o `pip.exe` do Windows aponta para um Python antigo que não existe mais.
-
 Use sempre:
 
 ```powershell
 python -m pip install -e ".[ml,science,dev]"
 ```
 
-Em vez de:
+em vez de:
 
 ```powershell
-pip install -e .[ml,science,dev]
+pip install -e ".[ml,science,dev]"
 ```

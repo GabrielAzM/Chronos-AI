@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: chronos-safe
+    runtime: python
+    rootDir: chronos_safe
+    buildCommand: python -m pip install -e .
+    startCommand: python -m uvicorn chronos_safe.apps.api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: CHRONOS_OPEN_BROWSER
+        value: "false"
+      - key: CHRONOS_DEVICE
+        value: "cpu"
+      - key: CHRONOS_USE_REBOUND_IF_AVAILABLE
+        value: "false"
+      - key: CHRONOS_LOG_LEVEL
+        value: "INFO"
+      - key: PYTHON_VERSION
+        value: "3.12.8"

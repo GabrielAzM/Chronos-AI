@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from chronos_safe.apps.api.schemas import SimulateRequest
 from chronos_safe.config.settings import SETTINGS
@@ -20,22 +20,49 @@ from chronos_safe.simulation.rollout import RolloutConfig, run_hybrid_rollout
 router = APIRouter(tags=["simulation"])
 
 
-@router.post("/simulate")
-def simulate(request: SimulateRequest) -> dict[str, object]:
-    client = HorizonsClient()
-    initial_state = client.load_fixture(request.fixture_name)
-    model = load_torch_model(request.checkpoint_path) if request.checkpoint_path else None
+def _build_engine(request: SimulateRequest) -> HybridEngine:
+    try:
+        model = load_torch_model(request.checkpoint_path) if request.checkpoint_path else None
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
     scaler = PhysicalScaler.load(request.scaler_path) if request.scaler_path else None
     ood_guard = OODGuard.load(request.ood_guard_path) if request.ood_guard_path else None
-    engine = HybridEngine(
+    return HybridEngine(
         quick_integrator=QuickIntegrator(dt_days=request.dt_days),
         reference_engine=ReboundReferenceEngine(dt_days=request.dt_days, use_rebound=SETTINGS.use_rebound_if_available),
         model=model,
         scaler=scaler,
         ood_guard=ood_guard,
     )
+
+
+def _trajectory_payload(result, dt_days: float, source: str) -> dict[str, object]:
+    return {
+        "source": source,
+        "ids": list(result.states[0].ids),
+        "frames": [state.positions.tolist() for state in result.states],
+        "dt_days": dt_days,
+        "metrics": dict(result.metrics),
+        "fallback_events": [event.to_dict() for event in result.fallback_events],
+    }
+
+
+@router.post("/simulate")
+def simulate(request: SimulateRequest) -> dict[str, object]:
+    client = HorizonsClient()
+    initial_state = client.load_fixture(request.fixture_name)
+    engine = _build_engine(request)
     result = run_hybrid_rollout(initial_state, engine, RolloutConfig(steps=request.steps, dt_days=request.dt_days))
     return result.to_dict()
+
+
+@router.post("/simulate/trajectory")
+def simulate_trajectory(request: SimulateRequest) -> dict[str, object]:
+    client = HorizonsClient()
+    initial_state = client.load_fixture(request.fixture_name)
+    engine = _build_engine(request)
+    result = run_hybrid_rollout(initial_state, engine, RolloutConfig(steps=request.steps, dt_days=request.dt_days))
+    return _trajectory_payload(result, request.dt_days, request.fixture_name)
 
 
 @router.post("/validate/apophis")

@@ -55,6 +55,7 @@ def run_apophis_validation(config: ApophisValidationConfig) -> dict[str, object]
         "hybrid_metrics": hybrid_result.metrics,
         "comparison_metrics": comparison_metrics,
         "fallback_count": len(hybrid_result.fallback_events),
+        "fallback_events": [event.to_dict() for event in hybrid_result.fallback_events],
         "benchmark": {name: result.to_dict() for name, result in benchmark["benchmarks"].items()},
     }
     config.report_dir.mkdir(parents=True, exist_ok=True)

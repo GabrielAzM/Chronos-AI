@@ -39,9 +39,11 @@ def main() -> None:
     configure_logging(SETTINGS.log_level)
     _ensure_runtime_directories()
 
-    host = os.getenv("CHRONOS_HOST", "127.0.0.1")
-    port = int(os.getenv("CHRONOS_PORT", "8000"))
-    open_browser = os.getenv("CHRONOS_OPEN_BROWSER", "true").lower() == "true"
+    render_port = os.getenv("PORT")
+    host = os.getenv("CHRONOS_HOST", "0.0.0.0" if render_port else "127.0.0.1")
+    port = int(render_port or os.getenv("CHRONOS_PORT", "8000"))
+    default_open_browser = "false" if render_port else "true"
+    open_browser = os.getenv("CHRONOS_OPEN_BROWSER", default_open_browser).lower() == "true"
     url = f"http://{host}:{port}/"
 
     if open_browser:

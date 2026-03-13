@@ -1,7 +1,7 @@
 CHRONOS-SAFE Apophis Validation Summary
 Fixture: apophis/apophis_fixture.json
-Steps: 5
+Steps: 180
 dt_days: 1.0
 Fallback count: 0
-Comparison metrics: {'mean_position_error_au': 1.489225618388087e-06, 'final_position_error_au': 2.979145929968567e-06, 'mean_velocity_error_au_day': 1.0749939782651335e-08, 'final_velocity_error_au_day': 2.2036446545902636e-08, 'earth_apophis_distance_error_au': 6.265254170190193e-07}
-Hybrid metrics: {'steps': 5.0, 'energy_drift': 3.882720367271109e-11, 'angular_momentum_drift': 1.2808042512821228e-16, 'earth_apophis_distance_final_au': 0.22494472975604463}
+Comparison metrics: {'mean_position_error_au': 0.000127252711090645, 'final_position_error_au': 0.00038646756297066085, 'mean_velocity_error_au_day': 3.434878061732233e-06, 'final_velocity_error_au_day': 7.906915378735502e-06, 'earth_apophis_distance_error_au': 0.00017358013690116358}
+Hybrid metrics: {'steps': 180.0, 'energy_drift': 2.098199086463821e-08, 'angular_momentum_drift': 1.2808042512821228e-16, 'earth_apophis_distance_final_au': 1.492800210637942}

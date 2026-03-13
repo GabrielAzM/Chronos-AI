@@ -26,12 +26,14 @@ ml = [
   "torch-geometric>=2.5",
 ]
 science = [
-  "rebound>=4.4",
   "astropy>=6.0",
   "astroquery>=0.4",
   "pandas>=2.0",
   "scikit-learn>=1.4",
   "matplotlib>=3.8",
+]
+rebound = [
+  "rebound>=4.4",
 ]
 dev = [
   "pytest>=8.0",

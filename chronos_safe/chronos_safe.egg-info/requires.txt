@@ -10,8 +10,10 @@ pytest>=8.0
 torch>=2.6
 torch-geometric>=2.5
 
-[science]
+[rebound]
 rebound>=4.4
+
+[science]
 astropy>=6.0
 astroquery>=0.4
 pandas>=2.0
