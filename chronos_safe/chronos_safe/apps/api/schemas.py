@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 class TrainRequest(BaseModel):
     dataset_dir: str
     output_dir: str
+    base_checkpoint: str | None = None
     epochs: int = Field(default=20, ge=1)
     batch_size: int = Field(default=16, ge=1)
 

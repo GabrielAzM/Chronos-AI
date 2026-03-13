@@ -141,4 +141,13 @@ def train_model(config: TrainingConfig) -> dict[str, object]:
     scaler_path = config.dataset_dir / "scaler.json"
     if scaler_path.exists():
         (config.output_dir / "scaler.json").write_text(scaler_path.read_text(encoding="utf-8"), encoding="utf-8")
-    return {"best_epoch": best_epoch, "best_val_loss": best_val, "history": history}
+    return {
+        "best_epoch": best_epoch,
+        "best_val_loss": best_val,
+        "history": history,
+        "dataset_dir": str(config.dataset_dir),
+        "output_dir": str(config.output_dir),
+        "checkpoint_path": str(config.output_dir / "model.pt"),
+        "scaler_path": str(config.output_dir / "scaler.json"),
+        "ood_guard_path": str(config.output_dir / "ood_guard.json"),
+    }

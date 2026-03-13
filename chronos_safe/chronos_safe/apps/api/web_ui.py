@@ -1090,6 +1090,9 @@ input, select, button {
             <label>Dataset especialista
               <input type="text" name="dataset_dir" data-fill="specialist_dataset_dir">
             </label>
+            <label>Checkpoint base
+              <select name="base_checkpoint" data-select="checkpoints" data-allow-empty="true"></select>
+            </label>
             <label>Saida do checkpoint
               <input type="text" name="output_dir" data-fill="specialist_checkpoint_dir">
             </label>
@@ -1382,6 +1385,8 @@ input, select, button {
           ["Cenario", payload.fixture_name],
           ["Passos", payload.steps],
           ["Passo temporal (dias)", payload.dt_days],
+          ["Checkpoint usado", payload.checkpoint_path],
+          ["Scaler usado", payload.scaler_path],
           ["Erro medio de posicao (AU)", payload.comparison_metrics?.mean_position_error_au],
           ["Erro medio de velocidade (AU/day)", payload.comparison_metrics?.mean_velocity_error_au_day],
           ["Erro na distancia Terra-Apophis (AU)", payload.comparison_metrics?.earth_apophis_distance_error_au],
@@ -1390,12 +1395,13 @@ input, select, button {
         ];
         return {
           heading: "Relatorio de validacao do Apophis",
-          subtitle: "Comparacao entre a referencia fisica e o modo hibrido, com foco em erro acumulado, estabilidade e seguranca.",
+          subtitle: "Comparacao entre a referencia fisica e o modo hibrido, com foco em erro acumulado, estabilidade, seguranca e trajetorias sobrepostas no 3D.",
           badges: [
             badgeHtml("apophis"),
             badgeHtml(`passos ${payload.steps}`),
             badgeHtml(`fallbacks ${payload.fallback_count}`),
             badgeHtml(`speedup ${formatValue(hybridMetrics.speedup_vs_reference)}x`),
+            badgeHtml(payload.checkpoint_path ? "com IA" : "sem IA"),
           ],
           metricCards: summaryMetrics,
           detailEntries,
@@ -1436,7 +1442,7 @@ input, select, button {
         const history = payload.history || [];
         return {
           heading: "Treino concluido",
-          subtitle: "Resumo do ajuste supervisionado do modelo residual.",
+          subtitle: "Resumo do ajuste supervisionado do modelo residual e artefatos gerados para simulacao.",
           badges: [
             badgeHtml("treino"),
             badgeHtml(`melhor epoca ${payload.best_epoch}`),
@@ -1448,7 +1454,14 @@ input, select, button {
             ["Entradas no historico", history.length],
             ["Status", "concluido"],
           ],
-          detailEntries: history.length ? Object.entries(history[history.length - 1]) : [],
+          detailEntries: [
+            ["Dataset", payload.dataset_dir],
+            ["Saida", payload.output_dir],
+            ["Checkpoint", payload.checkpoint_path],
+            ["Scaler", payload.scaler_path],
+            ["OOD guard", payload.ood_guard_path],
+            ...(history.length ? Object.entries(history[history.length - 1]) : []),
+          ],
           fallbackEvents: [],
           risk: makeRisk("green", "Treino concluido", "O backend finalizou o treino e salvou o resumo principal desta execucao.", "verde"),
         };
@@ -1520,27 +1533,126 @@ input, select, button {
       document.getElementById("output-box").textContent = text;
     }
 
-    function renderTrajectory3D(payload) {
-      if (!window.Plotly || !payload.frames || !payload.ids) {
+    function hexToRgba(hex, alpha) {
+      const normalized = hex.replace("#", "");
+      const value = normalized.length === 3
+        ? normalized.split("").map((char) => char + char).join("")
+        : normalized;
+      const numeric = Number.parseInt(value, 16);
+      const r = (numeric >> 16) & 255;
+      const g = (numeric >> 8) & 255;
+      const b = numeric & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function setSelectValueByName(formId, fieldName, value) {
+      const element = document.querySelector(`#${formId} [name="${fieldName}"]`);
+      if (!element || !value) {
         return;
       }
-      const traces = payload.ids.map((bodyId, index) => ({
-        type: "scatter3d",
-        mode: "lines+markers",
-        name: bodyId,
-        x: payload.frames.map((frame) => frame[index][0]),
-        y: payload.frames.map((frame) => frame[index][1]),
-        z: payload.frames.map((frame) => frame[index][2]),
-        line: {
-          color: orbitPalette[index % orbitPalette.length],
-          width: bodyId.toLowerCase() === "sun" ? 8 : 4,
+      const optionExists = Array.from(element.options || []).some((option) => option.value === value);
+      if (optionExists) {
+        element.value = value;
+      }
+    }
+
+    function applyTrainingArtifacts(payload) {
+      if (!payload || !payload.checkpoint_path) {
+        return;
+      }
+      const targets = [
+        ["simulate-form", "checkpoint_path", payload.checkpoint_path],
+        ["simulate-form", "scaler_path", payload.scaler_path],
+        ["simulate-form", "ood_guard_path", payload.ood_guard_path],
+        ["apophis-form", "checkpoint_path", payload.checkpoint_path],
+        ["apophis-form", "scaler_path", payload.scaler_path],
+        ["apophis-form", "ood_guard_path", payload.ood_guard_path],
+        ["train-specialist-form", "base_checkpoint", payload.checkpoint_path],
+      ];
+      targets.forEach(([formId, fieldName, value]) => setSelectValueByName(formId, fieldName, value));
+    }
+
+    async function autoPreviewTrainingArtifacts(payload) {
+      if (!payload || !payload.checkpoint_path) {
+        return;
+      }
+      await callApi(
+        "/simulate/trajectory",
+        {
+          fixture_name: state.catalog?.defaults?.default_fixture || "apophis/apophis_fixture.json",
+          steps: 180,
+          dt_days: 1.0,
+          checkpoint_path: payload.checkpoint_path,
+          scaler_path: payload.scaler_path,
+          ood_guard_path: payload.ood_guard_path,
         },
-        marker: {
-          color: orbitPalette[index % orbitPalette.length],
-          size: bodyId.toLowerCase() === "sun" ? 5 : 3,
-        },
-        hovertemplate: `${bodyId}<br>x=%{x:.4f}<br>y=%{y:.4f}<br>z=%{z:.4f}<extra></extra>`,
-      }));
+        null
+      );
+    }
+
+    function renderTrajectory3D(payload) {
+      if (!window.Plotly || !payload.ids) {
+        return;
+      }
+      const traces = [];
+      if (payload.reference_frames && payload.hybrid_frames) {
+        payload.ids.forEach((bodyId, index) => {
+          const color = orbitPalette[index % orbitPalette.length];
+          traces.push({
+            type: "scatter3d",
+            mode: "lines",
+            name: `${bodyId} ref`,
+            x: payload.reference_frames.map((frame) => frame[index][0]),
+            y: payload.reference_frames.map((frame) => frame[index][1]),
+            z: payload.reference_frames.map((frame) => frame[index][2]),
+            line: {
+              color: hexToRgba(color, 0.34),
+              width: bodyId.toLowerCase() === "sun" ? 4 : 2,
+            },
+            hovertemplate: `${bodyId} ref<br>x=%{x:.4f}<br>y=%{y:.4f}<br>z=%{z:.4f}<extra></extra>`,
+          });
+          traces.push({
+            type: "scatter3d",
+            mode: "lines+markers",
+            name: `${bodyId} hybrid`,
+            x: payload.hybrid_frames.map((frame) => frame[index][0]),
+            y: payload.hybrid_frames.map((frame) => frame[index][1]),
+            z: payload.hybrid_frames.map((frame) => frame[index][2]),
+            line: {
+              color,
+              width: bodyId.toLowerCase() === "sun" ? 8 : 4,
+            },
+            marker: {
+              color,
+              size: bodyId.toLowerCase() === "sun" ? 5 : 3,
+            },
+            hovertemplate: `${bodyId} hybrid<br>x=%{x:.4f}<br>y=%{y:.4f}<br>z=%{z:.4f}<extra></extra>`,
+          });
+        });
+      } else if (payload.frames) {
+        payload.ids.forEach((bodyId, index) => {
+          const color = orbitPalette[index % orbitPalette.length];
+          traces.push({
+            type: "scatter3d",
+            mode: "lines+markers",
+            name: bodyId,
+            x: payload.frames.map((frame) => frame[index][0]),
+            y: payload.frames.map((frame) => frame[index][1]),
+            z: payload.frames.map((frame) => frame[index][2]),
+            line: {
+              color,
+              width: bodyId.toLowerCase() === "sun" ? 8 : 4,
+            },
+            marker: {
+              color,
+              size: bodyId.toLowerCase() === "sun" ? 5 : 3,
+            },
+            hovertemplate: `${bodyId}<br>x=%{x:.4f}<br>y=%{y:.4f}<br>z=%{z:.4f}<extra></extra>`,
+          });
+        });
+      } else {
+        return;
+      }
 
       const layout = {
         margin: { l: 0, r: 0, t: 0, b: 0 },
@@ -1568,7 +1680,14 @@ input, select, button {
         displaylogo: false,
         scrollZoom: true,
       });
-      const meta = `Corpos: ${payload.ids.length} | Passos: ${payload.frames.length - 1} | dt_days: ${payload.dt_days} | Fallbacks: ${payload.fallback_events.length}`;
+      const stepCount = payload.frames
+        ? payload.frames.length - 1
+        : payload.hybrid_frames
+          ? payload.hybrid_frames.length - 1
+          : 0;
+      const fallbackCount = (payload.fallback_events || []).length;
+      const modeLabel = payload.reference_frames && payload.hybrid_frames ? "Comparacao referencia vs hibrido" : "Trajetoria simulada";
+      const meta = `${modeLabel} | Corpos: ${payload.ids.length} | Passos: ${stepCount} | dt_days: ${payload.dt_days} | Fallbacks: ${fallbackCount}`;
       document.getElementById("plot-meta").textContent = meta;
     }
 
@@ -1645,7 +1764,7 @@ input, select, button {
         });
         const payload = await response.json();
         setOutput(payload);
-        if (payload.frames && payload.ids) {
+        if ((payload.frames && payload.ids) || (payload.reference_frames && payload.hybrid_frames && payload.ids)) {
           renderTrajectory3D(payload);
         }
         if (!response.ok) {
@@ -1653,6 +1772,11 @@ input, select, button {
         }
         setStatus(`Concluido: ${url}`);
         await loadCatalog();
+        applyTrainingArtifacts(payload);
+        if (url.startsWith("/train/") && payload.checkpoint_path) {
+          setStatus(`Concluido: ${url} | artefatos ligados ao simulador 3D`);
+          await autoPreviewTrainingArtifacts(payload);
+        }
       } catch (error) {
         setOutput({ error: error.message, endpoint: url });
         setStatus(`Erro: ${error.message}`);
@@ -1680,6 +1804,14 @@ input, select, button {
       return payload;
     }
 
+    function formPayload(formId, defaults) {
+      const form = document.getElementById(formId);
+      if (!form) {
+        return defaults;
+      }
+      return { ...defaults, ...formToObject(form) };
+    }
+
     function bindForm(id, url) {
       const form = document.getElementById(id);
       form.addEventListener("submit", async (event) => {
@@ -1702,14 +1834,14 @@ input, select, button {
     });
 
     document.getElementById("preview-button").addEventListener("click", async () => {
-      const payload = {
+      const payload = formPayload("simulate-form", {
         fixture_name: state.catalog?.defaults?.default_fixture || "apophis/apophis_fixture.json",
         steps: 180,
         dt_days: 1.0,
         checkpoint_path: null,
         scaler_path: null,
         ood_guard_path: null,
-      };
+      });
       await callApi("/simulate/trajectory", payload, document.getElementById("preview-button"));
     });
 
@@ -1718,14 +1850,14 @@ input, select, button {
     });
 
     document.getElementById("run-apophis-now-button").addEventListener("click", async () => {
-      const payload = {
+      const payload = formPayload("apophis-form", {
         fixture_name: state.catalog?.defaults?.default_fixture || "apophis/apophis_fixture.json",
         steps: 180,
         dt_days: 1.0,
         checkpoint_path: null,
         scaler_path: null,
         ood_guard_path: null,
-      };
+      });
       await callApi("/validate/apophis", payload, document.getElementById("run-apophis-now-button"));
     });
 

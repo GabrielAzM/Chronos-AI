@@ -32,6 +32,7 @@ def train_specialist(request: TrainRequest) -> dict[str, object]:
         return run_train_specialist(
             dataset_dir=request.dataset_dir,
             output_dir=request.output_dir,
+            base_checkpoint=request.base_checkpoint,
             epochs=request.epochs,
             batch_size=request.batch_size,
         )
