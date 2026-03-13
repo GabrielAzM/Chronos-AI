@@ -52,20 +52,24 @@ def render_dashboard_html() -> str:
   <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   <style>
     :root {
-      --bg: #f4efe6;
-      --panel: rgba(255, 250, 242, 0.92);
-      --panel-strong: #fff8ef;
-      --ink: #1d2227;
-      --muted: #666f78;
-      --line: rgba(25, 32, 40, 0.12);
-      --accent: #0f7a5c;
-      --accent-2: #c76725;
-      --danger: #a8362f;
-      --shadow: 0 18px 50px rgba(28, 34, 41, 0.12);
-      --radius: 18px;
+      --bg: #050d1b;
+      --bg-deep: #020712;
+      --panel: rgba(7, 18, 38, 0.82);
+      --panel-strong: rgba(10, 26, 52, 0.92);
+      --ink: #ecf6ff;
+      --muted: #8fa7c5;
+      --line: rgba(108, 170, 255, 0.18);
+      --accent: #4db5ff;
+      --accent-2: #1f7bff;
+      --accent-soft: #8eddff;
+      --danger: #ff7b7b;
+      --warning: #ffca70;
+      --success: #57efb0;
+      --shadow: 0 24px 64px rgba(2, 8, 18, 0.55);
+      --radius: 20px;
       --mono: "Consolas", "SFMono-Regular", monospace;
-      --serif: "Georgia", "Times New Roman", serif;
-      --sans: "Segoe UI", "Trebuchet MS", sans-serif;
+      --serif: "Palatino Linotype", "Book Antiqua", "Times New Roman", serif;
+      --sans: "Bahnschrift", "Aptos", "Trebuchet MS", "Segoe UI", sans-serif;
     }
 
     * { box-sizing: border-box; }
@@ -73,17 +77,72 @@ def render_dashboard_html() -> str:
       margin: 0;
       font-family: var(--sans);
       color: var(--ink);
+      position: relative;
+      overflow-x: hidden;
       background:
-        radial-gradient(circle at top left, rgba(15, 122, 92, 0.18), transparent 30%),
-        radial-gradient(circle at top right, rgba(199, 103, 37, 0.18), transparent 32%),
-        linear-gradient(180deg, #f7f1e6 0%, #efe5d5 100%);
+        radial-gradient(circle at 12% 18%, rgba(77, 181, 255, 0.22), transparent 30%),
+        radial-gradient(circle at 84% 10%, rgba(143, 221, 255, 0.16), transparent 26%),
+        radial-gradient(circle at 50% 110%, rgba(31, 123, 255, 0.18), transparent 34%),
+        linear-gradient(180deg, #071426 0%, #040b16 46%, #020712 100%);
       min-height: 100vh;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.72;
+      background-image:
+        radial-gradient(circle at 12% 18%, rgba(255,255,255,0.9) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 72% 24%, rgba(143,221,255,0.85) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 38% 70%, rgba(255,255,255,0.82) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 86% 62%, rgba(143,221,255,0.8) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 18% 88%, rgba(255,255,255,0.7) 0 1px, transparent 1.5px),
+        radial-gradient(circle at 55% 42%, rgba(143,221,255,0.56) 0 1px, transparent 1.5px);
+      animation: starDrift 28s linear infinite alternate;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: -18% -10% auto;
+      height: 44vh;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 30% 40%, rgba(77, 181, 255, 0.16), transparent 34%),
+        radial-gradient(circle at 66% 22%, rgba(143, 221, 255, 0.12), transparent 28%);
+      filter: blur(26px);
+      animation: auroraFloat 15s ease-in-out infinite alternate;
+    }
+
+    @keyframes starDrift {
+      from { transform: translate3d(0, 0, 0); }
+      to { transform: translate3d(0, 16px, 0); }
+    }
+
+    @keyframes auroraFloat {
+      from { transform: translate3d(-1%, 0, 0) scale(1); opacity: 0.9; }
+      to { transform: translate3d(2%, 2%, 0) scale(1.05); opacity: 1; }
+    }
+
+    @keyframes panelRise {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .shell {
       width: min(1200px, calc(100vw - 32px));
       margin: 0 auto;
       padding: 28px 0 40px;
+      position: relative;
+      z-index: 1;
     }
 
     .hero {
@@ -98,7 +157,8 @@ def render_dashboard_html() -> str:
       border: 1px solid var(--line);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(18px);
+      animation: panelRise 420ms ease both;
     }
 
     .hero-card {
@@ -107,15 +167,30 @@ def render_dashboard_html() -> str:
       overflow: hidden;
     }
 
+    .hero-card::before {
+      content: "";
+      position: absolute;
+      inset: -24% auto auto 62%;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      border: 1px solid rgba(143, 221, 255, 0.12);
+      box-shadow:
+        0 0 0 28px rgba(77, 181, 255, 0.04),
+        0 0 0 58px rgba(143, 221, 255, 0.03);
+      opacity: 0.85;
+      transform: rotate(16deg);
+    }
+
     .hero-card::after {
       content: "";
       position: absolute;
-      inset: auto -30px -30px auto;
-      width: 180px;
-      height: 180px;
-      background: linear-gradient(135deg, rgba(15, 122, 92, 0.18), rgba(199, 103, 37, 0.18));
+      inset: auto -40px -54px auto;
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, rgba(77, 181, 255, 0.22) 0%, rgba(77, 181, 255, 0.02) 62%, transparent 72%);
       border-radius: 50%;
-      filter: blur(4px);
+      filter: blur(10px);
     }
 
     h1, h2 {
@@ -125,7 +200,11 @@ def render_dashboard_html() -> str:
       letter-spacing: -0.03em;
     }
 
-    h1 { font-size: clamp(2rem, 5vw, 3.6rem); line-height: 0.95; }
+    h1 {
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      line-height: 0.93;
+      text-shadow: 0 0 24px rgba(77, 181, 255, 0.12);
+    }
     h2 { font-size: 1.2rem; margin-bottom: 14px; }
 
     .subtitle {
@@ -147,7 +226,8 @@ def render_dashboard_html() -> str:
       border-radius: 999px;
       font-size: 0.88rem;
       border: 1px solid var(--line);
-      background: rgba(255,255,255,0.65);
+      background: rgba(8, 20, 38, 0.74);
+      color: var(--ink);
     }
 
     .stats {
@@ -162,12 +242,14 @@ def render_dashboard_html() -> str:
       border: 1px solid var(--line);
       border-radius: 14px;
       padding: 14px 16px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
     }
 
     .stat strong {
       display: block;
       font-size: 1.35rem;
       margin-top: 6px;
+      color: var(--accent-soft);
     }
 
     .grid {
@@ -185,6 +267,7 @@ def render_dashboard_html() -> str:
 
     .guide-card {
       padding: 18px;
+      background: linear-gradient(180deg, rgba(10, 22, 42, 0.92), rgba(8, 18, 34, 0.78));
     }
 
     .guide-step {
@@ -194,10 +277,12 @@ def render_dashboard_html() -> str:
       width: 34px;
       height: 34px;
       border-radius: 50%;
-      background: rgba(15, 122, 92, 0.12);
+      background: rgba(77, 181, 255, 0.12);
       color: var(--accent);
       font-weight: 800;
       margin-bottom: 10px;
+      border: 1px solid rgba(77, 181, 255, 0.18);
+      box-shadow: 0 0 18px rgba(77, 181, 255, 0.12);
     }
 
     .guide-card p {
@@ -212,6 +297,20 @@ def render_dashboard_html() -> str:
       margin-bottom: 18px;
       display: grid;
       gap: 14px;
+      background: linear-gradient(135deg, rgba(8, 22, 44, 0.88), rgba(7, 17, 32, 0.78));
+      position: relative;
+      overflow: hidden;
+    }
+
+    .summary-panel::after {
+      content: "";
+      position: absolute;
+      inset: auto -90px -110px auto;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(143, 221, 255, 0.18), transparent 68%);
+      pointer-events: none;
     }
 
     .summary-copy {
@@ -224,6 +323,11 @@ def render_dashboard_html() -> str:
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
+    }
+
+    .summary-actions button {
+      flex: 1 1 240px;
+      width: auto;
     }
 
     .summary-note {
@@ -241,9 +345,10 @@ def render_dashboard_html() -> str:
       padding: 18px 20px;
       border-radius: var(--radius);
       border: 1px solid var(--line);
-      background: var(--panel);
+      background: linear-gradient(135deg, rgba(9, 20, 40, 0.86), rgba(6, 14, 28, 0.8));
       box-shadow: var(--shadow);
       font-weight: 700;
+      color: var(--accent-soft);
     }
 
     details.advanced-shell > summary::-webkit-details-marker {
@@ -264,16 +369,21 @@ def render_dashboard_html() -> str:
       width: 100%;
       min-height: 520px;
       border-radius: 16px;
-      background: linear-gradient(180deg, #111821 0%, #0b1016 100%);
-      border: 1px solid rgba(18, 25, 33, 0.12);
+      background:
+        radial-gradient(circle at 50% 50%, rgba(41, 95, 255, 0.1), transparent 34%),
+        linear-gradient(180deg, #05101e 0%, #020712 100%);
+      border: 1px solid rgba(108, 170, 255, 0.18);
       overflow: hidden;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 20px 36px rgba(2, 8, 18, 0.36);
     }
 
     .plot-meta {
       margin-top: 12px;
       font-family: var(--mono);
       font-size: 0.86rem;
-      color: var(--muted);
+      color: var(--accent-soft);
     }
 
     .panel {
@@ -302,26 +412,40 @@ input, select, button {
       width: 100%;
       border-radius: 12px;
       border: 1px solid var(--line);
-      background: rgba(255,255,255,0.95);
+      background: rgba(8, 20, 38, 0.92);
       padding: 11px 12px;
       font: inherit;
       color: var(--ink);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: rgba(143, 221, 255, 0.44);
+      box-shadow:
+        0 0 0 3px rgba(77, 181, 255, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
     }
 
     button {
       border: none;
-      background: linear-gradient(135deg, var(--accent), #127b8f);
+      background: linear-gradient(135deg, #1f7bff, #4db5ff);
       color: white;
       font-weight: 700;
       cursor: pointer;
-      transition: transform 160ms ease, opacity 160ms ease;
+      transition: transform 160ms ease, opacity 160ms ease, box-shadow 160ms ease;
+      box-shadow: 0 14px 28px rgba(31, 123, 255, 0.24);
     }
 
     button.secondary {
-      background: linear-gradient(135deg, var(--accent-2), #d28f3b);
+      background: linear-gradient(135deg, #0d2b63, #2b95ff);
+      box-shadow: 0 14px 28px rgba(13, 43, 99, 0.24);
     }
 
-    button:hover { transform: translateY(-1px); }
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 32px rgba(31, 123, 255, 0.28);
+    }
     button:disabled { opacity: 0.55; cursor: wait; transform: none; }
 
     .toolbar {
@@ -329,6 +453,11 @@ input, select, button {
       gap: 10px;
       flex-wrap: wrap;
       margin-bottom: 10px;
+    }
+
+    .toolbar button {
+      flex: 1 1 220px;
+      width: auto;
     }
 
     .hint {
@@ -343,9 +472,9 @@ input, select, button {
       font-size: 0.88rem;
       padding: 10px 12px;
       border-radius: 12px;
-      background: rgba(15, 122, 92, 0.08);
-      border: 1px solid rgba(15, 122, 92, 0.16);
-      color: #0d5a44;
+      background: rgba(77, 181, 255, 0.1);
+      border: 1px solid rgba(77, 181, 255, 0.16);
+      color: var(--accent-soft);
       margin-bottom: 12px;
       white-space: pre-wrap;
     }
@@ -363,42 +492,46 @@ input, select, button {
       padding: 16px 18px;
       border-radius: 16px;
       border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.76);
+      background: linear-gradient(135deg, rgba(10, 24, 46, 0.94), rgba(8, 18, 34, 0.82));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
     }
 
     .risk-banner[data-level="green"] {
-      background: rgba(15, 122, 92, 0.11);
-      border-color: rgba(15, 122, 92, 0.22);
+      background: linear-gradient(135deg, rgba(7, 36, 33, 0.94), rgba(5, 23, 21, 0.82));
+      border-color: rgba(87, 239, 176, 0.22);
     }
 
     .risk-banner[data-level="yellow"] {
-      background: rgba(199, 103, 37, 0.12);
-      border-color: rgba(199, 103, 37, 0.22);
+      background: linear-gradient(135deg, rgba(55, 34, 7, 0.94), rgba(34, 21, 5, 0.84));
+      border-color: rgba(255, 202, 112, 0.22);
     }
 
     .risk-banner[data-level="red"] {
-      background: rgba(168, 54, 47, 0.11);
-      border-color: rgba(168, 54, 47, 0.22);
+      background: linear-gradient(135deg, rgba(56, 14, 20, 0.94), rgba(34, 8, 12, 0.84));
+      border-color: rgba(255, 123, 123, 0.22);
     }
 
     .risk-light {
       width: 18px;
       height: 18px;
       border-radius: 50%;
-      box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.35);
+      box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.08), 0 0 20px currentColor;
       background: #9aa5ae;
     }
 
     .risk-banner[data-level="green"] .risk-light {
-      background: var(--accent);
+      background: var(--success);
+      color: var(--success);
     }
 
     .risk-banner[data-level="yellow"] .risk-light {
-      background: var(--accent-2);
+      background: var(--warning);
+      color: var(--warning);
     }
 
     .risk-banner[data-level="red"] .risk-light {
       background: var(--danger);
+      color: var(--danger);
     }
 
     .risk-copy {
@@ -429,11 +562,12 @@ input, select, button {
     .risk-pill {
       padding: 8px 12px;
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.72);
+      background: rgba(6, 16, 32, 0.82);
       border: 1px solid var(--line);
       font-size: 0.82rem;
       font-weight: 700;
       white-space: nowrap;
+      color: var(--ink);
     }
 
     .results-topline {
@@ -480,7 +614,7 @@ input, select, button {
       padding: 7px 11px;
       border-radius: 999px;
       border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.72);
+      background: rgba(6, 16, 32, 0.82);
       font-size: 0.82rem;
       color: var(--ink);
     }
@@ -501,7 +635,8 @@ input, select, button {
       padding: 14px 16px;
       border-radius: 14px;
       border: 1px solid var(--line);
-      background: var(--panel-strong);
+      background: linear-gradient(180deg, rgba(10, 24, 48, 0.96), rgba(8, 17, 32, 0.88));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
     }
 
     .metric-card span {
@@ -528,7 +663,7 @@ input, select, button {
       padding: 14px 16px;
       border-radius: 14px;
       border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.74);
+      background: rgba(8, 18, 34, 0.84);
     }
 
     .detail-card h3 {
@@ -572,8 +707,8 @@ input, select, button {
     .fallback-item {
       padding: 11px 12px;
       border-radius: 12px;
-      background: rgba(168, 54, 47, 0.06);
-      border: 1px solid rgba(168, 54, 47, 0.12);
+      background: rgba(55, 14, 20, 0.4);
+      border: 1px solid rgba(255, 123, 123, 0.14);
     }
 
     .fallback-item strong {
@@ -596,15 +731,15 @@ input, select, button {
       border-radius: 14px;
       border: 1px dashed var(--line);
       color: var(--muted);
-      background: rgba(255, 255, 255, 0.4);
+      background: rgba(6, 14, 28, 0.54);
       font-size: 0.9rem;
     }
 
     .json-card {
       padding: 0;
       overflow: hidden;
-      background: #0f1620;
-      border-color: #26303a;
+      background: #04101f;
+      border-color: rgba(108, 170, 255, 0.16);
     }
 
     .json-head {
@@ -613,8 +748,8 @@ input, select, button {
       align-items: center;
       gap: 12px;
       padding: 12px 14px;
-      border-bottom: 1px solid #26303a;
-      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(108, 170, 255, 0.14);
+      background: rgba(77, 181, 255, 0.04);
     }
 
     .json-head h3 {
@@ -645,8 +780,159 @@ input, select, button {
       .hero, .grid, .row, .results-grid, .metric-grid, .guide-grid {
         grid-template-columns: 1fr;
       }
+
+      .results-topline {
+        align-items: flex-start;
+      }
+
+      .results-badges {
+        width: 100%;
+      }
+
+      .risk-banner {
+        grid-template-columns: 1fr;
+        align-items: start;
+      }
+
+      .risk-pill {
+        justify-self: start;
+      }
+
+      .kv-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+
+      .kv-value {
+        text-align: left;
+      }
+
+      #trajectory-plot {
+        min-height: 420px;
+      }
+
+      .hero-card,
+      .panel {
+        padding: 18px;
+      }
+
       .shell {
         width: min(100vw - 18px, 1200px);
+      }
+    }
+
+    @media (max-width: 680px) {
+      body::before,
+      body::after {
+        opacity: 0.5;
+      }
+
+      .shell {
+        width: min(100vw - 12px, 1200px);
+        padding: 12px 0 24px;
+      }
+
+      .hero {
+        gap: 14px;
+        margin-bottom: 14px;
+      }
+
+      .hero-card,
+      .panel {
+        border-radius: 16px;
+        padding: 16px;
+      }
+
+      .hero-card::before {
+        width: 160px;
+        height: 160px;
+        inset: -20% auto auto 70%;
+      }
+
+      .hero-card::after {
+        width: 150px;
+        height: 150px;
+        inset: auto -30px -40px auto;
+      }
+
+      h1 {
+        font-size: clamp(1.8rem, 10vw, 2.8rem);
+        line-height: 0.96;
+      }
+
+      h2 {
+        font-size: 1.05rem;
+        margin-bottom: 10px;
+      }
+
+      .subtitle,
+      .summary-copy,
+      .summary-note,
+      .hint,
+      .results-subtitle,
+      .risk-description {
+        font-size: 0.92rem;
+      }
+
+      .badge-row,
+      .results-badges {
+        gap: 8px;
+      }
+
+      .badge,
+      .results-badge,
+      .risk-pill {
+        font-size: 0.78rem;
+        padding: 7px 10px;
+      }
+
+      .guide-card,
+      .stat,
+      .metric-card,
+      .detail-card {
+        padding: 14px;
+      }
+
+      .summary-actions,
+      .toolbar {
+        gap: 8px;
+      }
+
+      .summary-actions button,
+      .toolbar button {
+        flex: 1 1 100%;
+      }
+
+      #trajectory-plot {
+        min-height: 320px;
+      }
+
+      .plot-meta,
+      .status,
+      .json-pre {
+        font-size: 0.8rem;
+      }
+
+      .results-heading {
+        font-size: 1.08rem;
+      }
+
+      .metric-card strong {
+        font-size: 1rem;
+      }
+
+      .fallback-list {
+        max-height: 220px;
+      }
+
+      .json-pre {
+        max-height: 280px;
+        padding: 12px;
+      }
+
+      details.advanced-shell > summary {
+        padding: 14px 16px;
+        font-size: 0.95rem;
       }
     }
   </style>
@@ -655,29 +941,30 @@ input, select, button {
   <div class="shell">
     <section class="hero">
       <div class="hero-card">
-        <p style="margin:0 0 10px;color:var(--accent);font-weight:700;letter-spacing:0.12em;text-transform:uppercase;">Control Center</p>
+        <p style="margin:0 0 10px;color:var(--accent-soft);font-weight:700;letter-spacing:0.16em;text-transform:uppercase;">Orbital Mission Control</p>
         <h1>CHRONOS-SAFE</h1>
         <p class="subtitle">
-          Interface visual pensada para quem nao sabe fisica orbital. Se voce e avaliador, basta abrir a demo 3D, rodar a validacao Apophis e ler o relatorio guiado logo abaixo.
+          Plataforma hibrida para simulacao orbital segura, com uma camada visual feita para demonstracao, avaliacao e leitura tecnica.
+          Abra a demo 3D, rode o caso Apophis e leia risco, erro acumulado, fallback e comparacao contra a referencia fisica.
         </p>
         <div class="badge-row">
-          <span class="badge">Nao precisa saber fisica</span>
-          <span class="badge">Visual 3D no navegador</span>
+          <span class="badge">Demo 3D instantanea</span>
           <span class="badge">Fallback seguro</span>
-          <span class="badge">Caso Apophis</span>
+          <span class="badge">Validacao Apophis</span>
+          <span class="badge">Pronto para Render</span>
         </div>
       </div>
       <aside class="hero-card stats">
         <div class="stat">
-          <span>Saude do servico</span>
+          <span>Mission status</span>
           <strong id="health-value">carregando...</strong>
         </div>
         <div class="stat">
-          <span>Fixtures detectados</span>
+          <span>Cenarios detectados</span>
           <strong id="fixtures-count">0</strong>
         </div>
         <div class="stat">
-          <span>Checkpoints detectados</span>
+          <span>Modelos detectados</span>
           <strong id="checkpoints-count">0</strong>
         </div>
       </aside>
@@ -704,7 +991,8 @@ input, select, button {
     <section class="panel summary-panel">
       <h2>Comece aqui</h2>
       <p class="summary-copy">
-        visualizacao orbital 3D. O segundo roda o caso Apophis, que e o teste principal desta pesquisa
+        Se voce esta em banca, avaliacao tecnica ou demonstracao no Render, use somente os dois botoes abaixo.
+        O primeiro abre a visualizacao orbital 3D. O segundo roda o caso Apophis, que e o teste principal desta pesquisa
         para verificar erro acumulado, estabilidade de rollout e capacidade de fallback seguro.
       </p>
       <div class="summary-actions">
@@ -933,7 +1221,7 @@ input, select, button {
 
   <script>
     const state = { catalog: null };
-    const orbitPalette = ["#ffd166", "#ef476f", "#06d6a0", "#72b7ff", "#f78c6b", "#9b5de5", "#8ecae6", "#ffb703", "#90be6d"];
+    const orbitPalette = ["#ffd166", "#7dd3fc", "#38bdf8", "#3b82f6", "#60a5fa", "#22d3ee", "#a5b4fc", "#2dd4bf", "#93c5fd"];
 
     function setStatus(message) {
       document.getElementById("status-box").textContent = message;
@@ -1256,21 +1544,21 @@ input, select, button {
 
       const layout = {
         margin: { l: 0, r: 0, t: 0, b: 0 },
-        paper_bgcolor: "#0b1016",
-        plot_bgcolor: "#0b1016",
-        font: { color: "#eef3f8" },
+        paper_bgcolor: "#030814",
+        plot_bgcolor: "#030814",
+        font: { color: "#ecf6ff" },
         legend: {
-          bgcolor: "rgba(18,24,33,0.55)",
-          bordercolor: "rgba(255,255,255,0.08)",
+          bgcolor: "rgba(6,14,28,0.72)",
+          bordercolor: "rgba(108,170,255,0.14)",
           borderwidth: 1,
         },
         scene: {
-          bgcolor: "#0b1016",
-          xaxis: { title: "X", color: "#b8c3cc", gridcolor: "#24313f", zerolinecolor: "#365067" },
-          yaxis: { title: "Y", color: "#b8c3cc", gridcolor: "#24313f", zerolinecolor: "#365067" },
-          zaxis: { title: "Z", color: "#b8c3cc", gridcolor: "#24313f", zerolinecolor: "#365067" },
+          bgcolor: "#030814",
+          xaxis: { title: "X", color: "#d8eaff", gridcolor: "#143055", zerolinecolor: "#2e6fb0" },
+          yaxis: { title: "Y", color: "#d8eaff", gridcolor: "#143055", zerolinecolor: "#2e6fb0" },
+          zaxis: { title: "Z", color: "#d8eaff", gridcolor: "#143055", zerolinecolor: "#2e6fb0" },
           camera: {
-            eye: { x: 1.45, y: 1.2, z: 0.9 },
+            eye: { x: 1.55, y: 1.16, z: 0.92 },
           },
         },
       };
