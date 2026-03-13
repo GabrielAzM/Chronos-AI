@@ -1,0 +1,664 @@
+# CHRONOS-SAFE
+
+CHRONOS-SAFE e uma plataforma de simulacao orbital hibrida.
+
+Em termos simples:
+
+- a fisica continua sendo a base confiavel;
+- a IA entra como corretora residual, nao como substituta cega;
+- existe uma camada de seguranca para detectar risco;
+- quando a previsao neural parece insegura, o sistema volta automaticamente para o motor fisico.
+
+O foco do projeto nao e apenas "acertar loss". O foco e:
+
+- estabilidade em rollout;
+- generalizacao fora do conjunto de treino;
+- seguranca numerica;
+- clareza cientifica;
+- base solida para pesquisa futura, benchmark, artigo e demonstracao publica.
+
+## O Que E, Por Que Existe e Para Que Serve
+
+Esta e a pergunta central que o projeto precisa responder.
+
+### O que e
+
+O CHRONOS-SAFE e um software para simular dinamica orbital de N-corpos de forma hibrida.
+
+Ele junta:
+
+- um motor fisico;
+- um modulo de IA residual;
+- uma camada de seguranca;
+- uma interface visual para avaliacao humana.
+
+### Por que existe
+
+Ele existe porque a linha de pesquisa anterior mostrou um problema importante:
+
+- modelos neurais podiam ter loss baixa;
+- mas ainda assim falhavam em rollout;
+- e podiam quebrar justamente quando saiam do dominio sintetico para um caso mais real.
+
+Ou seja, o problema real nao era apenas "prever bem no treino".
+O problema real era:
+
+- generalizar com seguranca;
+- manter estabilidade ao longo do tempo;
+- nao explodir numericamente;
+- saber quando confiar e quando recuar para a fisica.
+
+O CHRONOS-SAFE foi criado para responder a esse problema de forma mais madura e mais util.
+
+### Qual e a justificativa deste projeto
+
+Este projeto se justifica por tres motivos ao mesmo tempo:
+
+1. Justificativa cientifica
+   a pesquisa anterior mostrou que boa performance em treino nao significa boa performance em rollout. Era necessario construir uma plataforma que medisse estabilidade, drift, generalizacao e fallback, e nao apenas loss.
+
+2. Justificativa tecnica
+   o codigo legado era monolitico, fragil e dificil de evoluir. Era necessario transformar a investigacao em um software modular, reproduzivel, executavel e apresentavel.
+
+3. Justificativa pratica
+   quem avalia o projeto precisa conseguir entender o valor dele sem depender de notebook, script isolado ou conhecimento avancado de astrodinamica. Por isso existe uma interface web, um fluxo de demonstracao e um caso central de validacao com Apophis.
+
+### Para que serve na pratica
+
+O software serve para quatro finalidades principais:
+
+1. Pesquisa cientifica
+   testar se uma IA residual em grafo consegue acelerar parte da simulacao sem perder seguranca.
+
+2. Benchmark tecnico
+   comparar motor fisico puro vs motor hibrido em erro, drift, rollout, fallback e custo computacional.
+
+3. Validacao de casos realistas
+   usar cenarios como Apophis para medir o comportamento do sistema fora do dominio sintetico puro.
+
+4. Demonstracao e comunicacao
+   permitir que uma banca, avaliador ou parceiro veja orbitas, leia metricas e entenda o valor do sistema sem depender de notebook solto ou script monolitico.
+
+### Como usar este projeto
+
+O CHRONOS-SAFE pode ser usado de tres formas principais, dependendo do objetivo.
+
+1. Usar como demonstracao visual
+   finalidade: entender rapidamente o projeto.
+
+   passos:
+   - rodar `python run.py`;
+   - abrir `http://127.0.0.1:8000/`;
+   - clicar em `1. Ver demo 3D`;
+   - clicar em `2. Rodar teste Apophis`;
+   - ler o `Relatorio guiado`.
+
+2. Usar como plataforma de pesquisa
+   finalidade: gerar dados, treinar modelos e medir desempenho.
+
+   passos:
+   - gerar dataset generalista;
+   - gerar dataset especialista;
+   - treinar o modelo generalista;
+   - fazer fine-tuning especialista;
+   - comparar simulacao hibrida vs referencia fisica;
+   - analisar metricas e fallback.
+
+3. Usar como benchmark tecnico
+   finalidade: comparar custo, erro e robustez entre abordagens.
+
+   passos:
+   - carregar um fixture;
+   - rodar a referencia fisica;
+   - rodar o modo hibrido;
+   - comparar erro final, erro medio, drift e speedup;
+   - verificar quando o fallback foi acionado.
+
+Se o objetivo for apenas avaliacao rapida, a forma correta de uso e a interface web.
+Se o objetivo for reproducao cientifica, a forma correta de uso e o pipeline completo de dados, treino, simulacao e validacao.
+
+## Finalidade de Cada Parte
+
+### O software
+
+O software existe para ser a plataforma executavel da pesquisa.
+
+Nao e apenas um conjunto de experimentos.
+Ele serve para:
+
+- gerar dados;
+- treinar modelos;
+- simular cenarios;
+- validar resultados;
+- registrar metricas;
+- produzir uma base reutilizavel para evolucao futura.
+
+### A pesquisa
+
+A pesquisa existe para investigar uma hipotese:
+
+> um modelo residual em grafo, assistindo um integrador rapido e protegido por fallback fisico, pode ser mais util e mais seguro do que tentar substituir toda a dinamica orbital com uma rede neural pura.
+
+Portanto, a finalidade da pesquisa nao e "provar que a IA substitui a fisica".
+A finalidade e descobrir:
+
+- ate onde a IA ajuda;
+- onde ela falha;
+- como detectar esse risco;
+- e como construir um sistema melhor do que o legado anterior.
+
+### O modelo 3D
+
+O modelo 3D nao foi colocado apenas para ficar bonito.
+
+Ele serve para:
+
+- tornar a simulacao palpavel para quem nao e especialista;
+- mostrar trajetorias de forma intuitiva;
+- facilitar demonstracao publica e avaliacao;
+- ajudar a perceber rapidamente se o sistema esta produzindo orbitas plausiveis;
+- conectar a parte tecnica com uma leitura visual compreensivel.
+
+Em outras palavras: o 3D e a camada de interpretacao humana do projeto.
+
+### O caso Apophis
+
+O caso Apophis e o teste principal de finalidade cientifica do projeto.
+
+Ele serve para:
+
+- sair do mundo puramente sintetico;
+- colocar o sistema diante de um cenario mais realista;
+- medir erro acumulado em rollout;
+- avaliar fallback e robustez;
+- mostrar se a estrategia hibrida se sustenta quando a distribuicao muda.
+
+## O Que Este Projeto Nao E
+
+Tambem e importante deixar claro o que este projeto nao pretende ser nesta versao.
+
+Ele nao e:
+
+- um sistema operacional final de defesa planetaria;
+- uma ferramenta certificada para previsao oficial de risco;
+- uma prova de que redes neurais substituem integradores fisicos de alta confiabilidade;
+- um simulador neural puro.
+
+Nesta versao, a finalidade correta e:
+
+- pesquisa aplicada;
+- validacao experimental;
+- demonstracao tecnica;
+- base de produto e benchmark;
+- plataforma de evolucao cientifica.
+
+## Para Quem Vai Avaliar
+
+Se voce nao sabe nada de fisica orbital, use este fluxo:
+
+1. Rode a interface web:
+
+```powershell
+python run.py
+```
+
+2. Abra:
+
+```text
+http://127.0.0.1:8000/
+```
+
+3. Clique em `1. Ver demo 3D`.
+
+4. Clique em `2. Rodar teste Apophis`.
+
+5. Leia o painel `Relatorio guiado`.
+
+Isso ja permite entender o valor do software sem precisar treinar modelos nem editar configuracoes.
+
+Se o projeto estiver hospedado no Render, o fluxo para o avaliador e o mesmo.
+
+## Roteiro de Avaliacao em 2 Minutos
+
+Para um avaliador que nao conhece fisica orbital, o caminho feliz e:
+
+1. abrir a pagina inicial;
+2. clicar em `1. Ver demo 3D`;
+3. observar as orbitas no navegador;
+4. clicar em `2. Rodar teste Apophis`;
+5. ler o `Relatorio guiado`.
+
+Esse roteiro foi priorizado para demonstracao publica, banca, avaliacao tecnica e deploy simples.
+
+## O Que o Software Faz
+
+O CHRONOS-SAFE combina quatro camadas:
+
+1. Motor fisico rapido:
+   usa um integrador simples e barato para propor o proximo passo.
+
+2. Correcao por IA:
+   uma residual GNN aprende a corrigir o erro do integrador rapido.
+
+3. Guarda de seguranca:
+   verifica se a previsao esta numericamente plausivel e se nao saiu da distribuicao esperada.
+
+4. Fallback fisico:
+   se houver risco, o sistema usa o baseline de referencia em vez de insistir na previsao neural.
+
+## Reposicionamento Cientifico
+
+Este projeto nao deve ser entendido como "simulador neural puro".
+
+A hipotese central do CHRONOS-SAFE e:
+
+> um modelo residual em grafo, assistindo um integrador fisico rapido e protegido por fallback para um motor confiavel, tem mais potencial de generalizacao e seguranca do que uma rede tentando substituir toda a dinamica orbital.
+
+Por isso, o target do modelo e:
+
+```text
+delta_acceleration = aceleracao_professor - aceleracao_do_integrador_rapido
+```
+
+Ou seja, a IA aprende o erro do metodo rapido, nao o universo inteiro do zero.
+
+## Linha do Tempo da Pesquisa
+
+O CHRONOS-SAFE nasce de uma linha de pesquisa experimental anterior sobre simulacao de N-corpos com IA.
+
+### Fase 1 - MLP prevendo proximo estado
+
+Primeira ideia:
+
+- usar uma MLP para prever o estado seguinte do sistema;
+- medir qualidade principalmente por loss de treino.
+
+Aprendizado:
+
+- o modelo podia apresentar loss baixa;
+- mas a simulacao degradava quando era executada por muitos passos;
+- o erro se acumulava rapidamente em rollout.
+
+### Fase 2 - MLP prevendo aceleracao
+
+Evolucao:
+
+- em vez de prever o estado bruto, o modelo passou a prever aceleracao;
+- a integracao numerica ficava fora da rede.
+
+Aprendizado:
+
+- isso melhorou a interpretabilidade;
+- a formulacao ficou mais proxima da fisica;
+- mas ainda havia fragilidade de generalizacao.
+
+### Fase 3 - HNNs e H-GNNs
+
+Tentativa seguinte:
+
+- explorar arquiteturas inspiradas por conservacao e estrutura Hamiltoniana;
+- incorporar relacoes entre corpos de forma mais fisica.
+
+Aprendizado:
+
+- conceitualmente promissor;
+- na pratica, ainda insuficiente para garantir robustez em cenarios reais mais dificeis.
+
+### Fase 4 - GNNs mais fortes e treino sintetico
+
+Nova direcao:
+
+- migracao para GNNs mais expressivas;
+- treino em sistemas sinteticos aleatorios;
+- uso de mais variacao em numero de corpos, massas e orbitas.
+
+Aprendizado:
+
+- os modelos aprendiam bem o dominio sintetico;
+- o treinamento parecia bom;
+- mas isso nao garantia comportamento seguro fora da distribuicao de treino.
+
+### Fase 5 - Transfer learning para Sistema Solar
+
+No legado mais recente, representado conceitualmente pelo `v19`, a estrategia virou:
+
+- pre-treinamento generalista em sistemas aleatorios;
+- fine-tuning especialista em dados do Sistema Solar;
+- validacao final com o caso Apophis.
+
+Aprendizado central da pesquisa:
+
+- loss baixa em treino nao garante estabilidade em rollout;
+- o problema dominante observado foi generalizacao OOD;
+- o modelo podia ir bem em dados sinteticos e falhar catastroficamente em dados reais.
+
+### Fase 6 - Reposicionamento para CHRONOS-SAFE
+
+O passo atual foi abandonar a narrativa de "substituir a fisica" e construir uma plataforma hibrida com:
+
+- residual learning;
+- OOD/uncertainty;
+- fallback fisico;
+- metricas de rollout e de fisica;
+- estrutura modular e pronta para demonstracao e produto.
+
+## O Que Era Esperado vs O Que Foi Encontrado
+
+### Expectativa inicial da linha de pesquisa
+
+Esperava-se que:
+
+- uma rede com loss baixa aprendesse a dinamica;
+- a simulacao mantivesse estabilidade ao longo de muitos passos;
+- o treino sintetico generalizasse suficientemente bem para casos reais.
+
+### Resultado real observado
+
+Na pratica, o que apareceu foi:
+
+- loss baixa sem garantia de estabilidade;
+- erro acumulado em rollout;
+- sensibilidade forte a distribuicoes novas;
+- falha em cenarios reais quando o dominio mudava.
+
+### Resposta do CHRONOS-SAFE
+
+O software atual foi desenhado justamente para responder a esses problemas:
+
+- IA residual em vez de estado absoluto;
+- motor fisico de referencia como professor e fallback;
+- deteccao de risco e OOD;
+- metricas de erro acumulado, energia e momento angular;
+- pipeline em duas fases para pesquisa reproduzivel.
+
+## O Caso Apophis
+
+Apophis e um dos pontos mais importantes deste projeto.
+
+Aqui, ele nao aparece apenas como "mais um corpo". Ele funciona como:
+
+- caso realista de validacao;
+- teste de generalizacao;
+- teste de estabilidade de rollout;
+- teste de confiabilidade da estrategia hibrida.
+
+### Por que Apophis importa aqui
+
+Ele e util para a pesquisa porque:
+
+- nao e apenas um sistema sintetico aleatorio;
+- introduz um cenario com interesse real;
+- permite comparar baseline fisico vs motor hibrido em algo mais proximo do mundo real.
+
+### O que a validacao Apophis mede
+
+A pipeline de validacao mede:
+
+- erro final de posicao;
+- erro medio ao longo do rollout;
+- erro de distancia Terra-Apophis;
+- drift de energia;
+- drift de momento angular;
+- taxa de fallback;
+- custo computacional;
+- speedup contra o baseline de referencia.
+
+### O que o avaliador deve observar no Apophis
+
+Ao rodar o caso Apophis, o ponto principal nao e "a animacao ficou bonita". O ponto principal e ver se:
+
+- o erro final permanece controlado;
+- o erro Terra-Apophis nao explode ao longo do rollout;
+- os drifts fisicos permanecem pequenos;
+- o sistema registra fallback quando a previsao neural fica insegura.
+
+Se esses sinais aparecem de forma coerente no relatorio, o software esta cumprindo o papel esperado para a v1.0.
+
+### O que significa "passar" no caso Apophis
+
+Nao significa "a IA substituiu a fisica".
+
+Significa que o sistema:
+
+- consegue rodar um caso realista;
+- mede seus proprios riscos;
+- recua para a fisica quando necessario;
+- produz um relatorio auditavel e compreensivel.
+
+## O Que Ja Foi Alcancado
+
+Nesta versao, o projeto ja entrega:
+
+- estrutura modular em Python;
+- motor rapido e motor de referencia;
+- residual GNN;
+- geracao de dados generalista e especialista;
+- validacao Apophis com fixture offline;
+- interface web com visualizacao 3D;
+- API e CLI;
+- relatorio de execucao com metricas resumidas;
+- configuracao simples para deploy no Render.
+
+## O Que Ainda Nao Deve Ser Vendido Como Resolvido
+
+Apesar da evolucao de engenharia, algumas limitacoes continuam importantes:
+
+- o fixture offline de Apophis e uma fixture de regressao, nao uma efemeride final de producao;
+- a camada de OOD da v1.0 e propositalmente simples;
+- a instalacao de `rebound` ainda pode ser dificil em alguns ambientes Windows;
+- o stack completo de treino depende de um PyTorch funcional no ambiente.
+
+## Arquitetura do Software
+
+O pacote foi organizado para separar responsabilidades:
+
+- `chronos_safe/domain`
+  - contratos de estado e resultados
+- `chronos_safe/physics`
+  - unidades, frames, integradores, invariantes
+- `chronos_safe/data`
+  - fixtures, geracao de dados, preprocessamento, scalers
+- `chronos_safe/models`
+  - residual GNN, OOD guard, uncertainty hooks
+- `chronos_safe/training`
+  - treino generalista, treino especialista, checkpointing
+- `chronos_safe/simulation`
+  - rollout hibrido, safe switch, validacao Apophis
+- `chronos_safe/evaluation`
+  - metricas, benchmark e resumos
+- `chronos_safe/apps`
+  - API e interface CLI
+
+## Metricas Oficiais
+
+O projeto mede:
+
+- loss residual supervisionada;
+- erro de posicao por horizonte;
+- erro de velocidade por horizonte;
+- erro medio acumulado;
+- erro final de posicao;
+- drift de energia;
+- drift de momento angular;
+- custo computacional;
+- speedup vs referencia;
+- taxa de fallback;
+- eventos de seguranca.
+
+## Regras de Seguranca
+
+O fallback e acionado quando ocorre, por exemplo:
+
+- `NaN` ou `Inf`;
+- residual acima do limite;
+- velocidade fora de faixa plausivel;
+- distancia minima violada;
+- score OOD acima do limiar;
+- drift de energia acima do tolerado;
+- drift de momento angular acima do tolerado.
+
+Cada fallback registra:
+
+- passo;
+- tempo logico;
+- motivo;
+- corpos afetados;
+- score associado;
+- acao tomada.
+
+## Interface Web
+
+A interface principal foi pensada para avaliacao simples.
+
+Ela oferece:
+
+- preview 3D;
+- validacao Apophis em um clique;
+- simulacao manual;
+- paineis avancados de dados e treino recolhidos por padrao;
+- relatorio tecnico resumido em linguagem mais amigavel.
+
+### Favicon e branding
+
+Se quiser adicionar o favicon da aplicacao, coloque o arquivo abaixo neste caminho:
+
+```text
+chronos_safe/chronos_safe/apps/api/static/chronosfav.png
+```
+
+O frontend ja esta preparado para servi-lo automaticamente em `/static/chronosfav.png`.
+
+## Deploy no Render
+
+O projeto possui configuracao pronta para deploy:
+
+- [render.yaml](/c:/Users/0100cit9207/Downloads/Chronos-simulator/render.yaml)
+- [render_deploy.md](/c:/Users/0100cit9207/Downloads/Chronos-simulator/chronos_safe/docs/render_deploy.md)
+
+### Resumo rapido
+
+O deploy publico foi otimizado para:
+
+- abrir a interface web;
+- mostrar a demo 3D;
+- rodar a validacao Apophis;
+- entregar um relatorio guiado;
+- evitar dependencias pesadas desnecessarias no build.
+
+### Passo a passo rapido
+
+1. Subir o repositorio no GitHub.
+2. Entrar no Render.
+3. Criar um `Blueprint` apontando para o repositorio.
+4. Deixar o Render usar o arquivo `render.yaml`.
+5. Aguardar o deploy.
+6. Acessar a URL publica.
+7. Rodar `1. Ver demo 3D` e depois `2. Rodar teste Apophis`.
+
+Se quiser o passo a passo completo dentro do painel do Render, leia [render_deploy.md](/c:/Users/0100cit9207/Downloads/Chronos-simulator/chronos_safe/docs/render_deploy.md).
+
+Importante: o deploy web do Render deve ser tratado como ambiente de demonstracao. Arquivos gerados em runtime podem nao persistir entre deploys e restarts.
+
+O repositorio tambem inclui `.python-version` em `chronos_safe/` para forcar `Python 3.12.8` no deploy manual.
+
+## Instalacao
+
+### Basica
+
+```powershell
+python -m pip install -e .
+```
+
+### Com treino e stack cientifica principal
+
+```powershell
+python -m pip install -e ".[ml,science,dev]"
+```
+
+### REBOUND opcional
+
+```powershell
+python -m pip install -r requirements-rebound.txt
+```
+
+Se `rebound` falhar no Windows, o sistema continua funcional com backend de referencia em NumPy.
+
+## Execucao Rapida
+
+```powershell
+python run.py
+```
+
+Depois abra:
+
+```text
+http://127.0.0.1:8000/
+```
+
+## CLI
+
+Comandos principais:
+
+```powershell
+chronos generate-generalist
+chronos generate-specialist
+chronos train-generalist
+chronos train-specialist
+chronos simulate
+chronos validate-apophis
+```
+
+Se `chronos` nao estiver no PATH:
+
+```powershell
+python -m chronos_safe.apps.cli.main <comando>
+```
+
+## API
+
+Rotas principais:
+
+- `GET /health`
+- `POST /generate/generalist`
+- `POST /generate/specialist`
+- `POST /train/generalist`
+- `POST /train/specialist`
+- `POST /simulate`
+- `POST /simulate/trajectory`
+- `POST /validate/apophis`
+
+## Testes
+
+```powershell
+python -m pytest -q
+```
+
+Cobertura minima atual:
+
+- units
+- frames
+- generator pipeline
+- model forward
+- safe switch
+- Apophis pipeline
+- web UI catalog
+
+## Documentacao Complementar
+
+- [Como rodar](/c:/Users/0100cit9207/Downloads/Chronos-simulator/chronos_safe/docs/como_rodar.md)
+- [Deploy no Render](/c:/Users/0100cit9207/Downloads/Chronos-simulator/chronos_safe/docs/render_deploy.md)
+- [Arquitetura](/c:/Users/0100cit9207/Downloads/Chronos-simulator/chronos_safe/docs/architecture.md)
+- [Metodologia](/c:/Users/0100cit9207/Downloads/Chronos-simulator/chronos_safe/docs/methodology.md)
+- [Protocolo Apophis](/c:/Users/0100cit9207/Downloads/Chronos-simulator/chronos_safe/docs/apophis_protocol.md)
+
+## Resumo Final
+
+O CHRONOS-SAFE representa uma mudanca de postura em relacao ao legado experimental:
+
+- sai a promessa de simulador neural puro;
+- entra uma plataforma hibrida, auditavel e modular;
+- a fisica continua como ancora de confiabilidade;
+- a IA atua onde faz mais sentido: como corretora residual;
+- Apophis deixa de ser apenas validacao final e passa a ser um teste central de robustez.
+
+Se o objetivo for demonstrar valor para avaliacao, produto ou pesquisa, esta versao ja entrega um caminho muito mais claro, seguro e explicavel do que a linha anterior.
